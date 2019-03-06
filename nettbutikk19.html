@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="nb">
+    <head>
+        <meta charset="UTF-8">
+        <title>Nettbutikken</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.3.1/css/foundation-flex.min.css">
+        <style media="screen">
+          body {
+            padding: 10px;
+          }
+          main {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-gap: 10px;
+          }
+          main > article > img {
+            width: 100%;
+          }
+          header > nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+          }
+          input {
+            width: 100%;
+          }
+          h1 {
+            font-size: 1.25rem;
+          }
+          @media (max-width: 1100px) {
+            main {
+              grid-template-columns: 1fr 1fr 1fr;
+            }
+          }
+          @media (max-width: 900px) {
+            main {
+              grid-template-columns: 1fr 1fr;
+            }
+          }
+          header > nav > .button {
+            margin-bottom: 1px;
+          }
+        </style>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <button class="button" onclick="visAlleVarer()">Alle varer</button>
+                <button class="button success" onclick="visBukser()">Bukser</button>
+                <button class="button" onclick="visSkjorter()">Skjorter</button>
+                <button class="button success" onclick="visKurv()">Handlekurv(<b id="antallVarer">0</b>)</button>
+                <button class="button warning" onclick="tom()">Tøm handlekurv</button>
+            </nav>
+
+        </header>
+        <aside id="kurven" style="display:none;"></aside>
+        <main></main>
+        <!-- Erstatt de to script-elementene nedenfor med koden fra Firebase her -->
+
+
+        <script src="https://www.gstatic.com/firebasejs/5.8.5/firebase.js"></script>
+        <script>
+          // Initialize Firebase
+          var config = {
+            apiKey: "AIzaSyA7WuL-S8gWg_VyGs2H89ijvqI3Z3dYgDA",
+            authDomain: "test-19-6a73b.firebaseapp.com",
+            databaseURL: "https://test-19-6a73b.firebaseio.com",
+            projectId: "test-19-6a73b",
+            storageBucket: "test-19-6a73b.appspot.com",
+            messagingSenderId: "990378576223"
+          };
+          firebase.initializeApp(config);
+        </script>
+
+        <script>
+            let database = firebase.database();
+            let bukser = database.ref("varer/bukser");
+            let skjorter = database.ref("varer/skjorter");
+            var sokefelt = document.getElementById("sokefelt");
+            var søketekst ="";
+            let main = document.querySelector("main");
+            function visVare(snapshot) {
+                let vare = snapshot.val();
+                main.innerHTML += `
+                    <article>
+                        <img src="bilder/${vare.bilde}">
+                        <h1>${vare.merke} ${vare.modell}</h1>
+                        <p>${vare.pris},- NOK</p>
+                        <button>Legg i handlekurv</button>
+                    </article>
+                `;
+            }
+            sokefelt.oninput = sok;
+            function sok () {
+                søketekst=sokefelt.value;
+                visBukser();
+
+            }
+            function visAlleVarer() {
+                bukser.on("child_added", visVare);
+                skjorter.on("child_added", visVare);
+            }
+            visAlleVarer();
+            function visAlleVarer() {
+                main.innerHTML = " "; //Fjerner alt innhold i main
+                bukser.on("child_added", visVare);
+                skjorter.on("child_added", visVare);
+            }
+            function visBukser() {
+                main.innerHTML = " ";
+                //bukser.on("child_added", visVare);
+                bukser
+                .orderByChild("pris")
+                .startAt(100)
+                .endAt(200)
+                .on("child_added",visVare);
+            }
+            function visSkjorter() {
+                main.innerHTML = " ";
+                skjorter.on("child_added", visVare);
+            }
+        </script>
+    </body>
+</html>
